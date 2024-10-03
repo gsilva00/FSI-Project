@@ -1,9 +1,8 @@
 
 Breve descrição do grupo
 
-* Turno: [L]XX
-* Grupo: YY
+* Turno: [L]12
+* Grupo: 02
 * Alunos:
-    - Aluno1 upZZZZZ 
-    - Aluno2 upZZZZZ
-    - Aluno3 upZZZZZ
+    - Aluno1 up202205298 
+    - Aluno2 up202206262
