@@ -4,5 +4,5 @@ Breve descrição do grupo
 * Turno: [L]12
 * Grupo: 02
 * Alunos:
-    - Aluno1 up202205298 
-    - Aluno2 up202206262
+    - Guilherme Moura Pinho Andrade Silva up202205298 
+    - Valentina Pereira Cadime up202206262
