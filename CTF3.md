@@ -38,8 +38,7 @@ Ao procurar no Google por "CVE-2023-2732 exploit" encontramos dois repositórios
 ![imagemdeerrodoprimeirorepositorio](ctf1-exploit2FEUPFirewall.png)
 Figura 1: Erro de comunicação ao executar código [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732)
 
--Foi entretanto anunciado que a firewall interna da rede da FEUP poderia estar a causar problemas.
-
+- Foi entretanto anunciado que a firewall interna da rede da FEUP poderia estar a causar problemas.
 
 - Ao utilizarmos uma Wi-Fi diferente, ambos os códigos executaram sem problemas. Como indicavam os exploits:
   - Visitamos o URL que faz um pedido de uma nova listagem, fazendo-se passar por admin (cujo ID é 1): `http://143.47.40.175:5001//wp-json/wp/v2/add-listing?id=1`
