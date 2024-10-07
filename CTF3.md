@@ -36,7 +36,7 @@ Ao procurar no Google por "CVE-2023-2732 exploit" encontramos dois repositórios
 - Ao executar o código do [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732), ocorria um erro de comunicação ao servidor. Por isso, tentamos executar o código do [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732), tendo também obtido um erro de comunicação.
 
 ![imagemdeerrodoprimeirorepositorio](ctf1-exploit2FEUPFirewall.png)
-Figura 1: Erro de comunicação ao executar código [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732)
+Figura 1: Erro de comunicação ao executar código do [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732)
 
 - Foi entretanto anunciado que a firewall interna da rede da FEUP poderia estar a causar problemas.
 
