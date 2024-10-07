@@ -31,7 +31,7 @@ Seguindo o guião, focamo-nos na procura de vulnerabilidades que fizessem alusã
 
 Ao procurar no Google por "CVE-2023-2732 exploit" encontramos dois repositórios com código que permitia utilizar esta vulnerabilidade:
 
-- [EXPLICAÇÂO DO CÓDIGO]
+- Ambos os códigos seguem o mesmo princípio, embora o [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732) possa dar exploit da vulnerabilidade em vários URLs ao mesmo tempo percorrendo um ficheiro .txt. Referente ao [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732), ao executar o ficheiro adicionando "-u" ou "-url", e, de seguida, o URL do site do WordPress, o exploit determina a versão do plugin aplicado. Se o README do plugin mencionar que a versão for menor 3.9.3, então retorna uma lista de utilizadores através da REST API, fazendo um pedido GET para "/wp-json/wp/v2/users". De seguida, o código imprime a lista de utilizadores e pede-nos para escolher um. Com o ID do admin, o exploit consegue fazer um pedido GET para "/wp-json/wp/v2/add-listing" com esse ID, verificando o sucesso através do cookie "wordpress_logged_in_". Finalmente, podemos visitar [site]/wp-json/wp/v2/add-listing?id=[id_do_admin] e deveremos estar com a sessão iniciada no site.
 
 - Ao executar o código do [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732), ocorria um erro de comunicação ao servidor. Por isso, tentamos executar o código do [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732), tendo também obtido um erro de comunicação. Foi entretanto anunciado que a firewall interna da rede da FEUP poderia estar a causar problemas.
 
