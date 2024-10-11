@@ -31,16 +31,20 @@ Seguindo o guião, focamo-nos na procura de vulnerabilidades que fizessem alusã
 
 Ao procurar no Google por "CVE-2023-2732 exploit" encontramos dois repositórios com código que permitia utilizar esta vulnerabilidade:
 
-- Ambos os códigos seguem o mesmo princípio, embora o [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732) possa dar exploit da vulnerabilidade em vários URLs ao mesmo tempo percorrendo um ficheiro .txt. Referente ao [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732), ao executar o ficheiro adicionando "-u" ou "-url", e, de seguida, o URL do site do WordPress, o exploit determina a versão do plugin aplicado. Se o README do plugin mencionar que a versão for menor 3.9.3, então retorna uma lista de utilizadores através da REST API, fazendo um pedido GET para "/wp-json/wp/v2/users". De seguida, o código imprime a lista de utilizadores e pede-nos para escolher um. Com o ID do admin, o exploit consegue fazer um pedido GET para "/wp-json/wp/v2/add-listing" com esse ID, verificando o sucesso através do cookie "wordpress_logged_in_". Finalmente, podemos visitar [site]/wp-json/wp/v2/add-listing?id=[id_do_admin] e deveremos estar com a sessão iniciada no site.
+- Ambos os códigos seguem o mesmo princípio, embora o [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732) possa dar exploit da vulnerabilidade em vários URLs ao mesmo tempo percorrendo um ficheiro .txt. Relativamente ao [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732), ao executar o ficheiro com o argumento `-u` ou `-url`, e, de seguida, o URL do site do WordPress, o exploit determina a versão do plugin aplicado. Se o README do plugin mencionar que a versão for menor 3.9.3, então retorna uma lista de utilizadores através da REST API, fazendo um pedido GET para `[site]/wp-json/wp/v2/users`. De seguida, o código imprime a lista de utilizadores e pede-nos para escolher um (através do id). Com o ID do admin, o exploit consegue fazer um pedido GET para `[site]/wp-json/wp/v2/add-listing` com esse ID, verificando o sucesso através do cookie `wordpress_logged_in_`. Finalmente, podemos visitar `[site]/wp-json/wp/v2/add-listing?id=[id_do_admin]` e deveremos estar com a sessão iniciada no site.
 
 - Ao executar o código do [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732), ocorria um erro de comunicação ao servidor. Por isso, tentamos executar o código do [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732), tendo também obtido um erro de comunicação.
 
-![imagemdeerrodoprimeirorepositorio](ctf1-exploit2FEUPFirewall.png)
+![error1stRepo](images/ctf3-exploit1FEUPFirewall.png)
 Figura 1: Erro de comunicação ao executar código do [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732)
 
 - Foi entretanto anunciado que a firewall interna da rede da FEUP poderia estar a causar problemas.
 
 - Ao utilizarmos uma Wi-Fi diferente, ambos os códigos executaram sem problemas. Como indicavam os exploits:
-  - Visitamos o URL que faz um pedido de uma nova listagem, fazendo-se passar por admin (cujo ID é 1): `http://143.47.40.175:5001//wp-json/wp/v2/add-listing?id=1`
-  - Retornamos ao site original, estando agora autenticados como o utilizador admin: `http://143.47.40.175:5001/`
-  - Esta permissão mais elevada deu-nos acesso a uma mensagem privada que continha a flag para completar o Desafio CTF: `flag{byebye}`
+
+![success2ndRepo](images/ctf3-exploit2Working.png)
+Figura 2: Erro de comunicação ao executar código do [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732)
+
+- Visitamos o URL que faz um pedido de uma nova listagem, fazendo-se passar por admin (cujo ID é 1): `http://143.47.40.175:5001//wp-json/wp/v2/add-listing?id=1`
+- Retornamos ao site original, estando agora autenticados como o utilizador admin: `http://143.47.40.175:5001/`
+- Esta permissão mais elevada deu-nos acesso a uma mensagem privada que continha a flag para completar o Desafio CTF: `flag{byebye}`
