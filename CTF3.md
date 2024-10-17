@@ -35,14 +35,14 @@ Ao procurar no Google por "CVE-2023-2732 exploit" encontramos dois repositórios
 
 - Ao executar o código do [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732), ocorria um erro de comunicação ao servidor. Por isso, tentamos executar o código do [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732), tendo também obtido um erro de comunicação.
 
-![error1stRepo](images/ctf3-exploit1FEUPFirewall.png)
+![error1stRepo](images/CTF3/ctf3-exploit1FEUPFirewall.png)
 Figura 1: Erro de comunicação ao executar código do [primeiro repositório](https://github.com/RandomRobbieBF/CVE-2023-2732)
 
 - Foi entretanto anunciado que a firewall interna da rede da FEUP poderia estar a causar problemas.
 
 - Ao utilizarmos uma Wi-Fi diferente, ambos os códigos executaram sem problemas. Como indicavam os exploits:
 
-![success2ndRepo](images/ctf3-exploit2Working.png)
+![success2ndRepo](images/CTF3/ctf3-exploit2Working.png)
 Figura 2: Erro de comunicação ao executar código do [segundo repositório](https://github.com/ThatNotEasy/CVE-2023-2732)
 
 - Visitamos o URL que faz um pedido de uma nova listagem, fazendo-se passar por admin (cujo ID é 1): `http://143.47.40.175:5001//wp-json/wp/v2/add-listing?id=1`
