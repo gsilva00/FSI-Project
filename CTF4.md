@@ -4,34 +4,34 @@
 
 We accessed the web server at `http://ctf-fsi.fe.up.pt:5002`, and immediately realized it was related to the shell, due to its header and footer mentioning the shell over and over ("Hard as a Shell", shell emojis), even redirecting to a page with more of those mentions and an ASCII art of the Shell oil company. So that could be one of the clues to find the vulnerability.
 
-Additionally, the website's search bar indicated that we could browse any path in the server by inputting the respective path. The server executes `ls -al` on the path we input through a `CGI` script (as evidenced by the URL, for example: `http://ctf-fsi.fe.up.pt:5002/cgi-bin/list.cgi?path=%2F`), and returns the output to the user (listing of all that directory's contents, including hidden ones, and their respective permissions).
+Additionally, the website's search bar indicated that we could browse any path in the server by inputting the respective path. The server executes `ls -al` on the path we input through a `CGI` script (as evidenced by the URL, for example: `http://ctf-fsi.fe.up.pt:5002/cgi-bin/list.cgi?path=%2F`), and returns the output to the user.
 
 Other than that, the web server's main page included information about all the installed software, but that wouldn't do much to narrow down the search for the vulnerability.
 
-## Researching and choosing the vulnerability
+## Researching the vulnerability
 
 By typing "shell vulnerability" into the Google search bar, the first result was the [Shellshock bug Wikipedia page](<https://en.wikipedia.org/wiki/Shellshock_(software_bug)>) that mentioned the possibility to "... cause the Bash to execute arbitrary commands and gain unauthorized access to many Internet-facing services, such as web servers, that use Bash to process requests".
 
-We inspected the initial vulnerability - [CVE-2014-6271](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271) - that reported the Shellshock bug on 12 September 2014, as well as 5 other closely related vulnerabilities which followed it a few days after ([CVE-2014-6277](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6277), [CVE-2014-6278](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6278), [CVE-2014-7169](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-7169), [CVE-2014-7186](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-7186) and [CVE-2014-7187](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-7187)). Through this, we realized that all GNU Bash versions up to 4.3 were affected by all the mentioned vulnerabilities.
+We inspected the initial vulnerability - [CVE-2014-6271](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271) - that reported the Shellshock bug on 12 September 2014, as well as 5 other closely related vulnerabilities which followed it a few days after ([CVE-2014-6277](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6277), [CVE-2014-6278](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6278), [CVE-2014-7169](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-7169), [CVE-2014-7186](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-7186) and [CVE-2014-7187](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-7187)). Through this, we realized that all GNU Bash versions up to 4.3 - the one being used in the web-server, as shown in the list of installed software - were affected by all the mentioned vulnerabilities.
 
-Focusing on the initial vulnerability ([CVE-2014-6271](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271)), it reports on the fact that the GNU Bash processes trailing strings in the definitions on environment variables, allowing attackers to execute arbitrary code via those defined variables. This is because the user input passes values to environment variables (for example, the `path` variable, as shown below), occurring what is referred to as "crossing a privilege boundary", which is passing data from an untrusted source (for example, the user) to a trusted process (like a system script on the web server), effectively giving the user privileges that they shouldn't have.
+## Choosing the vulnerability
 
-We verified that this web server was possibly vulnerable to this CVE, due to it being an Apache server, as indicated by the installed packages on the main page of the web server, which was one of the attack vectors described in the [CVE](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271).
+Focusing on the initial vulnerability ([CVE-2014-6271](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271)), it reports on the fact that the GNU Bash processes trailing strings in the definitions on environment variables, allowing attackers to execute arbitrary code via those defined variables. This is because the user input passes values to environment variables - as we realized when exploiting, to the `path` variable, as shown below; or the `REQUEST_URI`, `QUERY_STRING`, and other variables as part of the GET request made to the server - occurring what is referred to as "crossing a privilege boundary", which is passing data from an untrusted source (for example, the user) to a trusted process (like a system script on the web server), effectively giving the user privileges that they shouldn't have.
 
-Similarly to [Task 8 of LOGBOOK4](/LOGBOOK4.md#task-8-invoking-external-programs-using-system-versus-execve), we tried to exploit the vulnerability by injecting commands both into the URL and on the input box (which worked in the exact same way), such as `/; pwd;`, to see if they would run, we got the following output:
+We verified that this web server was possibly vulnerable to this CVE, due to it being an Apache server (as indicated by the installed packages on the main page of the web server), which was one of the attack vectors described in the [CVE](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271).
+
+Similarly to [Task 8 of LOGBOOK4](/LOGBOOK4.md#task-8-invoking-external-programs-using-system-versus-execve), we tried to exploit the vulnerability by injecting commands both into the URL and on the input box (which worked in the exact same way), such as `; pwd;` - which is the trailing string in the value of the `path` environment variable, as per the [CVE's](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271) description - to see if they would run, and we got the following output:
 
 ![injecting_result](/images/CTF4/injecting_result.png)
 Image 1 - Output after injecting `pwd` command
 
-It outputted the environment variables (followed by the output of `pwd` and `ls -al /`). With this information, we confirmed it was an Apache server (version 2.4.7, in the `SERVER_SIGNATURE` variable), as well as the execution of these commands through the CGI script (`list.cgi` in the `SCRIPT_NAME` variable), which was another attack vector described in the CVE.
+It outputted the environment variables (followed by the output of `pwd`, `ls -al /`). With this information, we confirmed that it was an Apache server (version 2.4.7, in the `SERVER_SIGNATURE` variable), and that it was executing the commands through the CGI script (`list.cgi` in the `SCRIPT_NAME` variable), which was another attack vector described in the CVE. Additionally, the fact that the `path` variable contained the input we provided (`/; pwd;`), and that we got the output to those commands, we got very strong evidence that the server was vulnerable to the Shellshock bug, as per its description.
 
-The fact that the `path` variable contained the input we provided (`/; pwd;`), and that we got the output to those commands, we got very strong proof that the server was vulnerable to the Shellshock bug, as per its description.
-
-Considering the clues we gathered, and to not repeat past mistakes of neglecting a correct vulnerability due to the difficulties working with the exploit, we tried `flag{CVE-2014-6271}` and completed the 1st part of the CTF challenge.
+Considering the clues we gathered, and to not repeat past mistakes of neglecting a correct vulnerability due to the difficulties working with the exploits' code, we tried `flag{CVE-2014-6271}` and completed the 1st part of the CTF challenge.
 
 ## Finding an exploit and exploiting the vulnerability
 
-As this is an extremely well-known vulnerability, by searching "cve-2014-6271 exploit", a lot of exploits are easily found, especially when adding "site:github.com" to the end of the search string. A few of them are:
+As this is an extremely well-known vulnerability, by searching "cve-2014-6271 exploit", a lot of exploits are easily found. A few of them are:
 
 - [exploit-CVE-2014-6271](https://github.com/opsxcq/exploit-CVE-2014-6271)
 - [CVE-2014-6271-Shellshock](https://github.com/MY7H404/CVE-2014-6271-Shellshock)
