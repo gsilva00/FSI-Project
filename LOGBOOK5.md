@@ -166,8 +166,8 @@ We can find the return address by making the calculations of the offset:
 |ebp = 0xffffcae8     | 4294953704 |
 |buffer = 0xffffca7c  | 4294953596 |
 .----------------------------------.
-buffer-ebp = 108 (decimal)
-buffer - ebp +4 = 112 (decimal)
+ebp - buffer = 108 (decimal)
+ebp - buffer + 4 = 112 (decimal)
 buffer[112] = 4 294 953 708 + 4 = 4 294 953 712 (decimal)
 
 4 294 953 712 = 0xffffcaf0
