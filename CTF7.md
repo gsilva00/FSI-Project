@@ -5,7 +5,8 @@
 We accessed the web server at `http://ctf-fsi.fe.up.pt:5007/`. The and as the guidelines indicated, the flag was located in an obvious spot, as a `.txt` file stored in the root (`/`). However, upon opening it, it says: `Nice try, I am only accessible via JavaScript shenanigans.`, which means we need to find a way to exploit the server using XSS. Another file, called `flag.gif`, was also present in the root, which, upon opening, rick-rolled us.
 
 **Question 1:** Why can't you access the secret flag directly?
-**Answer 1:** Upon finding it, it seems the flag isn't directly accessible due to us being unauthenticated. !!!!!!!!!!!!!!!!!
+
+**Answer 1:** Upon finding it, it seems the flag isn't directly accessible due to it being necessary to use JavaScript (a clue about XSS).
 
 On the top-right, it mentions `Read-Only access` which, as we've seen so far, indicates that we can only read the files present in the `/` directory, but not write to them. We also cannot find a way to upload files to the server.
 The `login` button right next to it - indicating that we are not logged in - takes us to the [control-panel page](http://ctf-fsi.fe.up.pt:5007/?h), which:
@@ -75,7 +76,7 @@ So, **to answer question 2**, we can use the vulnerability to access the flag, b
 
 Beginning with the PoC provided in the security report, we swapped the JavaScript code that triggers on the `onerror` event from `alert(1)` to a script that fetches the flag from the `/flag.txt` file, and displays it in an alert box:
 
-```TODO: language=javascript
+```javascript
 fetch("/flag.txt")
   .then((response) => response.text())
   .then((content) => alert(content))
@@ -109,6 +110,7 @@ Then, by appending the payload in the URL (`http://ctf-fsi.fe.up.pt:5007/`) - an
 Image 3: Execution of the payload, displaying the flag in an alert box
 
 **Question 3:** What is the type of XSS vulnerability (Reflected, Stored or DOM) that allowed you to access the flag?
+
 **Answer 3:** This XSS vulnerability is Reflected XSS, as the payload was reflected back to the user in the response, and executed in the context of the user's browser, due to improper input validation or/and output encoding.
 
 ## Further analysis
