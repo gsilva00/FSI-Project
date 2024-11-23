@@ -17,6 +17,7 @@ The `login` button right next to it - indicating that we are not logged in - tak
   - option to reset client settings, which will disable `k304` (indicating that this one is actually the default, contrarily to what the previous point suggests)
 - mentions logging in for more:
   - with a text field and a `Login` button. Upon clicking the button (having typed anything in the field or not), it shows the following page, which automatically redirects to the starting page (root directory), remaining logged out:
+    
     ![login_failed](/images/CTF7/login_failed.png)
     
     Image 1: Login failed page
