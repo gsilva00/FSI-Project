@@ -6,7 +6,7 @@
 
 In this week's first task, we will perform frequency analysis on a ciphertext to decipher it. The ciphertext was generated using a monoalphabetic substitution cipher, which is a type of substitution cipher where each letter in an alphabet is mapped to a single letter in the ciphertext alphabet.
 
-First, we need to analyze the frequency of the n-grams in the [ciphertext](/files/LOGBOOK9/TASK1/ciphertext.txt). We will use the [freq.py](/files/LOGBOOK9/TASK1/freq.py) script to do this. It was slightly altered to include the percentages after the frequency of each n-gram, to make it easier to analyze the results and compare them to the English language (altered/added lines are marked with a comment starting with `# !`).
+First, we need to analyze the frequency of the n-grams in the [ciphertext](/files/LOGBOOK9/TASK1/ciphertext.txt). We will use the [freq.py](/files/LOGBOOK9/TASK1/freq.py) script to do this. It was slightly altered to include the percentages after the frequency of each n-gram, to make it easier to analyze the results and compare them to the English language (altered/added lines are marked with a comment starting with `!`).
 
 ```bash
 ./freq.py
@@ -238,11 +238,11 @@ The result can be seen [here](/files/LOGBOOK9/TASK1/plaintext_try1.txt).
 
 From the most used letters not yet deciphered in the ciphertext:
 
-- `v` is the most common letter
-- `vu` and `up` are common bigrams (even though not the most common, because `mu` is the most common bigram)
 - `vup` is the most common trigram.
+- `vu` and `up` are common bigrams (even though not the most common, because `mu` is the most common bigram)
+- `v` is the most common letter
 
-These facts correlate to the frequency of `an` and `and` (the next most common bigram and trigram in English). The fact that `a` and `i` are vowels - as well as very common letters - that pair with `n` in common words, makes it likely that `u` in the ciphertext is `n` in the plaintext, if we assume that `v` is `a` and `m` is `i`.
+These facts correlate to the frequency of `an` and `and` (the next most common bigram and trigram in English). Additionally, the fact that `a` and `i` are vowels - as well as very common letters - that pair with `n` in very common words (`and` and `in`), makes it likely that `u` in the ciphertext is `n` in the plaintext, if we assume that `v` is `a` and `m` is `i`.
 
 So we tried:
 
@@ -336,7 +336,8 @@ Letters deciphered so far:
 With this amount of letters deciphered, it becomes easier to decipher the ciphertext by reading it and finding words that are almost fully deciphered (as we did in the previous conversion), and that are related to each other. Consider the groups of words:
 
 - `DIfIDED`, `fOTES`, `fOTEhS`, `INITIATIfES`, `cOfIE`, `cOfIES`, `DIfISIfE` and `HAfE`
-- `lAS`, `lHETHEh`, `lHO`, `HOl`, `AlAhDS`, `lONT`, `lITH`, `lIN`, `NATIONAi` and `gEHIND`
+- `lAS`, `lHETHEh`, `lHO`, `HOl`, `AlAhDS`, `lONT`, `lITH`, `lIN`
+- `NATIONAi` and `gEHIND`
 
 ... where the undeciphered letters are the same and have very few possibilities. This makes these letters safe guesses to decipher.
 
@@ -386,7 +387,7 @@ Letters deciphered so far:
 | i          | L         |
 | g          | B         |
 
-#### Result
+#### Final Result
 
 The more letters are deciphered in the monoalphabetic substitution cipher, the easier it becomes to decipher the remaining letters, as more words are complete and the context of the plaintext becomes clearer. So, the complete cipher is:
 
@@ -448,6 +449,8 @@ As requested by the guidelines (plaintext with at least 1000 bytes), the [plaint
 -iv 0102030405060708                # the initialization vector as a string of hexadecimal digits
 ```
 
+Which result in the following command:
+
 ```bash
 openssl enc -aes-128-ecb -e -in plaintext.txt -out cipher_ecb.bin -K 00112233445566778889aabbccddeeff -iv 0102030405060708
 # Output: warning: iv not used by this cipher
@@ -455,7 +458,7 @@ openssl enc -aes-128-ecb -e -in plaintext.txt -out cipher_ecb.bin -K 00112233445
 
 > Note: The warning message is due to the fact that the `IV` is not used in the ECB mode, and therefore not required.
 
-The encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_ecb.bin)
+After executing it, the encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_ecb.bin).
 
 #### aes-128-cbc
 
@@ -468,6 +471,8 @@ The encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_ecb.bin)
 -iv 0102030405060708                # the initialization vector as a string of hexadecimal digits
 ```
 
+Which result in the following command:
+
 ```bash
 openssl enc -aes-128-cbc -e -in plaintext.txt -out cipher_cbc.bin -K 00112233445566778889aabbccddeeff -iv 0102030405060708
 # Output: hex string is too short, padding with zero bytes to length
@@ -475,7 +480,7 @@ openssl enc -aes-128-cbc -e -in plaintext.txt -out cipher_cbc.bin -K 00112233445
 
 > Note: The warning message is due to the fact that the `IV` doesn't have the full length required for the AES algorithm, 16 bytes (128 bits), so it is padded with zeros and the encryption is completed without an error.
 
-The encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_cbc.bin)
+After executing it, the encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_cbc.bin).
 
 #### aes-128-ctr
 
@@ -485,15 +490,19 @@ The encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_cbc.bin)
 -in plaintext.txt                   # input filename
 -out cipher_ctr.bin                 # output filename
 -K 00112233445566778889aabbccddeeff # the key to use for encryption as a string of hexadecimal digits (when only the key is defined, IV must be specified)
--iv 0102030405060708                # the initialization vector as a string of hexadecimal digits
+-iv 0102030405060708                # the initialization vector as a string of hexadecimal digits (used as the nonce)
 ```
+
+Which result in the following command:
 
 ```bash
 openssl enc -aes-128-ctr -e -in plaintext.txt -out cipher_ctr.bin -K 00112233445566778889aabbccddeeff -iv 0102030405060708
 # Output: hex string is too short, padding with zero bytes to length
 ```
 
-The encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_ctr.bin)
+After executing it, the encrypted output can be found [here](/files/LOGBOOK9/TASK2/cipher_ctr.bin).
+
+---
 
 **Question 1B:** What's the difference between these different modes?
 
@@ -527,6 +536,8 @@ Furthermore, padding is not required for CTR mode, because the plaintext is XOR'
 -iv 0102030405060708                # the initialization vector as a string of hexadecimal digits
 ```
 
+Which result in the following command:
+
 ```bash
 openssl enc -aes-128-ecb -d -in cipher_ecb.bin -out decrypted_ecb.txt -K 00112233445566778889aabbccddeeff -iv 0102030405060708
 # Output: warning: iv not used by this cipher
@@ -535,9 +546,10 @@ diff -s plaintext.txt decrypted_ecb.txt
 ```
 
 > Note: The warning message is due to the fact that the `IV` is not used in the ECB mode, and therefore not required.
+>
 > Note 2: The `diff` command is used to compare the plaintext and the decrypted plaintext, and the output shows that they are identical.
 
-The decrypted output can be found [here](/files/LOGBOOK9/TASK2/decrypted_ecb.txt)
+After executing it, the decrypted output can be found [here](/files/LOGBOOK9/TASK2/decrypted_ecb.txt).
 
 #### aes-128-cbc
 
@@ -559,7 +571,7 @@ diff -s plaintext.txt decrypted_cbc.txt
 
 > Note: The warning message is due to the fact that the `IV` doesn't have the full length required for the AES algorithm, 16 bytes (128 bits), so it is padded with zeros and the encryption is completed without an error.
 
-The decrypted output can be found [here](/files/LOGBOOK9/TASK2/decrypted_cbc.txt)
+The decrypted output can be found [here](/files/LOGBOOK9/TASK2/decrypted_cbc.txt).
 
 #### aes-128-ctr
 
@@ -569,7 +581,7 @@ The decrypted output can be found [here](/files/LOGBOOK9/TASK2/decrypted_cbc.txt
 -in cipher_ctr.bin                  # input filename
 -out decrypted_ctr.txt              # output filename
 -K 00112233445566778889aabbccddeeff # the key to use for encryption as a string of hexadecimal digits (when only the key is defined, IV must be specified)
--iv 0102030405060708                # the initialization vector as a string of hexadecimal digits
+-iv 0102030405060708                # the initialization vector as a string of hexadecimal digits (used as the nonce)
 ```
 
 ```bash
@@ -579,29 +591,33 @@ diff -s plaintext.txt decrypted_ctr.txt
 # Files plaintext.txt and decrypted_ctr.txt are identical
 ```
 
-The decrypted output can be found [here](/files/LOGBOOK9/TASK2/decrypted_cbc.txt)
+The decrypted output can be found [here](/files/LOGBOOK9/TASK2/decrypted_cbc.txt).
 
 **Question 2B:** What's the main difference between the aes-128-ctr and the other modes?
 
-**Answer 2B:** The answer to question 1B has already detailed the different ways the ECB, CBC, and CTR modes work. The main difference between the CTR mode and the other modes is that, during encryption, the plaintext does not go through the encryption algorithm, the keystream does. Conversely, during decryption, the ciphertext does not go through the decryption algorithm, the keystream does. In each case, the desired output (plaintext/ciphertext) is obtained by XORing the keystream with the ciphertext/plaintext, respectively (which is the only operation done on them). This is contrary to the ECB and CBC modes, where the plaintext/ciphertext are directly encrypted/decrypted using the AES algorithm.
+**Answer 2B:** The answer to **Question 1B** has already detailed the different ways the ECB, CBC, and CTR modes work. To add to that, the main difference between the CTR mode and the other modes is that, during encryption, the plaintext does not go through the encryption algorithm, the key stream does. In the reverse operation, during decryption, the ciphertext does not go through the decryption algorithm, the key stream does. In each case, the desired output (plaintext/ciphertext) is obtained by XORing the key stream with the ciphertext/plaintext, respectively (which is the only operation done on them). This is contrary to the ECB and CBC modes, where the plaintext/ciphertext are directly encrypted/decrypted using the AES algorithm.
 
 ## Task 5: Error Propagation - Corrupted Cipher Text
 
-Given that our group number 2, the byte to change in each ciphertext is byte number 50\*2 = 100 (0x64), assuming the first byte is the 0th. The 100th byte corresponds to the letter `t` in `... to explore the world beyond ...`. Given that the AES algorithm uses 128-bit blocks (16-bytes), the byte to change is in the 7th block (byte 96 to byte 111).
+Given that our group is group 2, the byte to change in each ciphertext is byte number 50\*2 = 100 (0x64), assuming the first byte is the 0th. The 100th byte corresponds to the letter `t` in `... to explore the world beyond ...`. Given that the AES algorithm uses 128-bit blocks (16-bytes), the byte to change is in the 7th block (byte 96 to byte 111).
 
 We will make this change in the encrypted binary file using the `Bless Hex Editor` and set it to `0x50` (arbitrary value - different from the 100th byte in each respective file).
 
 ### aes-128-ecb
 
-By analyzing the [ECB decryption scheme](/images/LOGBOOK9/scheme_ECB_decryption.png), we can see that the corrupted ciphertext byte will only affect the block in which it is located, and the rest of the blocks will remain unchanged, because the ECB mode encrypts each block independently.
+By analyzing the [ECB decryption scheme](/images/LOGBOOK9/scheme_ECB_decryption.png), we can see that the corrupted ciphertext byte will only affect the block in which it is located (16 bytes), and the rest of the blocks will remain unchanged, because the ECB mode encrypts each block independently.
 
 ![Uncorrupted ECB ciphertext in bless](/images/LOGBOOK9/cipher_ecb_before.png)
 
 Image 1: Excerpt of the uncorrupted ECB ciphertext in `Bless`
 
+---
+
 ![Corrupted ECB ciphertext in bless](/images/LOGBOOK9/cipher_ecb_after.png)
 
 Image 2: Excerpt of the corrupted ECB ciphertext in `Bless`
+
+---
 
 ```bash
 openssl enc -aes-128-ecb -d -in corrupted_cipher_ecb.bin -out corrupted_decrypted_ecb.txt -K 00112233445566778889aabbccddeeff -iv 0102030405060708
@@ -634,9 +650,13 @@ The blocks after that (starting from the 9th) will remain unchanged, because eve
 
 Image 4: Excerpt of the uncorrupted CBC ciphertext in `Bless`
 
+---
+
 ![Corrupted CBC ciphertext in bless](/images/LOGBOOK9/cipher_cbc_after.png)
 
 Image 5: Excerpt of the corrupted CBC ciphertext in `Bless`
+
+---
 
 ```bash
 openssl enc -aes-128-cbc -d -in corrupted_cipher_cbc.bin -out corrupted_decrypted_cbc.txt -K 00112233445566778889aabbccddeeff -iv 0102030405060708
@@ -661,15 +681,19 @@ Image 6: Excerpt of the corrupted CBC decrypted plaintext
 
 ### aes-128-ctr
 
-By analyzing the [CTR decryption scheme](/images/LOGBOOK9/scheme_CTR_decryption.png), we can see that the corrupted ciphertext byte will only affect the (single) respective byte in the plaintext, because the CTR mode decrypts the ciphertext block by XORing it with the keystream (this keystream is generated by encrypting a nonce concatenated with a counter, using the key). This means that the ciphertext block does not go through the decryption process - the keystream does - and is instead XOR'ed (which is naturally done byte-by-byte, giving it the byte-independent characteristic, which results in the corrupted byte not propagating to the rest of the plaintext block), with the keystream to obtain the plaintext block.
+By analyzing the [CTR decryption scheme](/images/LOGBOOK9/scheme_CTR_decryption.png), we can see that the corrupted ciphertext byte will only affect the respective byte in the plaintext (only 1!), because the CTR mode decrypts the ciphertext block by XORing it with the key stream (which is generated by encrypting a nonce concatenated with a counter, using the key). This means that the ciphertext block does not go through the decryption process - the key stream does - and is instead XOR'ed (which is naturally done byte-by-byte, giving it the byte-independent characteristic, which results in the corrupted byte not propagating to the rest of the plaintext block), with the key stream to obtain the plaintext block.
 
 ![Uncorrupted CTR ciphertext in bless](/images/LOGBOOK9/cipher_ctr_before.png)
 
 Image 7: Excerpt of the uncorrupted CTR ciphertext in `Bless`
 
+---
+
 ![Corrupted CTR ciphertext in bless](/images/LOGBOOK9/cipher_ctr_after.png)
 
 Image 8: Excerpt of the corrupted CTR ciphertext in `Bless`
+
+---
 
 ```bash
 openssl enc -aes-128-ctr -d -in corrupted_cipher_ctr.bin -out corrupted_decrypted_ctr.txt -K 00112233445566778889aabbccddeeff -iv 0102030405060708
@@ -689,4 +713,4 @@ Image 9: Excerpt of the corrupted CTR decrypted plaintext
 ger :o explore t
 ```
 
-> The whole 7th block is shown above.
+> The whole 7th block (16 bytes) is shown above.
