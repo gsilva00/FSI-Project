@@ -634,6 +634,8 @@ Given the output, we can confirm that our analysis was correct (only the 7th blo
 
 Image 3: Excerpt of the corrupted ECB decrypted plaintext
 
+---
+
 ```plaintext
 �[����}
 �/Q�J
@@ -673,6 +675,8 @@ Given the output, we can confirm that our analysis was correct (the 7th and 8th 
 
 Image 6: Excerpt of the corrupted CBC decrypted plaintext
 
+---
+
 ```plaintext
 �4$�ez�[�]��j��he wgrld beyond
 ```
@@ -708,6 +712,8 @@ Given the output, we can confirm that our analysis was correct (only the 100th b
 ![Corrupted CTR decrypted output](/images/LOGBOOK9/corrupted_decrypted_ctr.png)
 
 Image 9: Excerpt of the corrupted CTR decrypted plaintext
+
+---
 
 ```plaintext
 ger :o explore t
