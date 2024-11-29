@@ -5,7 +5,8 @@
 We accessed the web server at `http://ctf-fsi.fe.up.pt:5007/`. The and as the guidelines indicated, the flag was located in an obvious spot, as a `.txt` file stored in the root (`/`). However, upon opening it, it says: `Nice try, I am only accessible via JavaScript shenanigans.`, which means we need to find a way to exploit the server using XSS. Another file, called `flag.gif`, was also present in the root, which, upon opening, rick-rolled us.
 
 **Question 1:** Why can't you access the secret flag directly?
-**Answer 1:** Upon finding it, it seems the flag isn't directly accessible due to us being unauthenticated. !!!!!!!!!!!!!!!!!
+
+**Answer 1:** Upon finding it, it seems the flag isn't directly accessible due to it being necessary to use JavaScript (a clue about XSS).
 
 On the top-right, it mentions `Read-Only access` which, as we've seen so far, indicates that we can only read the files present in the `/` directory, but not write to them. We also cannot find a way to upload files to the server.
 The `login` button right next to it - indicating that we are not logged in - takes us to the [control-panel page](http://ctf-fsi.fe.up.pt:5007/?h), which:
@@ -17,8 +18,11 @@ The `login` button right next to it - indicating that we are not logged in - tak
   - option to reset client settings, which will disable `k304` (indicating that this one is actually the default, contrarily to what the previous point suggests)
 - mentions logging in for more:
   - with a text field and a `Login` button. Upon clicking the button (having typed anything in the field or not), it shows the following page, which automatically redirects to the starting page (root directory), remaining logged out:
+    
     ![login_failed](/images/CTF7/login_failed.png)
+    
     Image 1: Login failed page
+  
   - a button to switch to `https`, which breaks the connection to the server.
 
 We started by opening all the files present in the server's root, to try to find any meaningful information about a vulnerability:
@@ -72,7 +76,7 @@ So, **to answer question 2**, we can use the vulnerability to access the flag, b
 
 Beginning with the PoC provided in the security report, we swapped the JavaScript code that triggers on the `onerror` event from `alert(1)` to a script that fetches the flag from the `/flag.txt` file, and displays it in an alert box:
 
-```TODO: language=javascript
+```javascript
 fetch("/flag.txt")
   .then((response) => response.text())
   .then((content) => alert(content))
@@ -81,6 +85,7 @@ fetch("/flag.txt")
 
 > To decide which type of request to make, we used the 'HTTP Header Live' extension to intercept the request and response headers, and see the requests being made to the server. We focused on the request made when directly accessing the flag through the `copyparty` application, and used the same type of request in the JavaScript code (GET):
 > ![direct_flag_request](/images/CTF7/direct_flag_request.png)
+> 
 > Image 2: Direct access to `flag.txt`
 
 - The `fetch()` function is used to make a request to the server. In this case, it is a GET request (default with `fetch()`) to `/flag.txt`, which is the file we want to access.
@@ -101,15 +106,18 @@ After URL-encoding it and substituting in the proof of concept, we get:
 Then, by appending the payload in the URL (`http://ctf-fsi.fe.up.pt:5007/`) - and the flag was displayed in the `alert()` pop-up: `flag{youGotMeReallyGood}`. Upon insert this flag in the CTF challenge, we completed it.
 
 ![flag_popup](/images/CTF7/flag_popup.png)
+
 Image 3: Execution of the payload, displaying the flag in an alert box
 
 **Question 3:** What is the type of XSS vulnerability (Reflected, Stored or DOM) that allowed you to access the flag?
+
 **Answer 3:** This XSS vulnerability is Reflected XSS, as the payload was reflected back to the user in the response, and executed in the context of the user's browser, due to improper input validation or/and output encoding.
 
 ## Further analysis
 
 Through 'HTTP Header Live', we observe the requests upon executing the payload, as expected, all of them are GET requests:
 ![exploit_req_resp](/images/CTF7/exploit_req_resp.png)
+
 Image 4: Requests and responses made upon executing the payload
 
 - the request with the payload in the `k304` parameter is followed by a 200 (OK) response.
@@ -117,8 +125,11 @@ Image 4: Requests and responses made upon executing the payload
 - therefore, the `onerror` event is triggered, and the JavaScript code is executed, which sends a GET request to fetch the flag from the `/flag.txt` - or so we thought - because the request fetches a file called `superblyHiddenFlagPGCT59TMXPLMNBT240F3.txt`, which contains the flag. The suffix of the file seems to be dynamically generated, as it changes every time we access the flag (see images below).
 
 ![flag_request1](/images/CTF7/flag_request1.png)
+
 Image 5: Request for the flag (file is `superblyHiddenFlagU2B3W7UZSYAS3OW3SSMR.txt`)
+
 ![flag_request2](/images/CTF7/flag_request2.png)
+
 Image 6: Request for the flag (file is `superblyHiddenFlag5M2N8Y2YQ7CX7HN74NZ3.txt`)
 
 We don't know exactly how the server generates this file upon the XSS script being executed, making a different file be fetched instead of the one specified in the script. We suppose it is a temporary file created to store the flag, and is deleted after being accessed, to prevent further access to the flag through direct means.
