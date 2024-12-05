@@ -33,7 +33,7 @@ According to the exploit, the vulnerable endpoint is the NotificationX plugin an
 
 The attack is carried out by sending POST requests with specially crafted query payloads, which are then executed by the database:
 
-1. The code sends a POST request to tentatively find the length of the admin username (`id=1`), using a prepared SQL query, starting from length 1 and increasing until 40 (default value, assuming the username is less than 40 characters long). If the length is correct, the server will sleep for a specified `delay` (indicating the length is correct), otherwise, it doesn't sleep. The time it takes for the server to respond is measured, and if it is greater than the `delay` (meaning the server slept... not always, as we'll see below), the length is considered correct.
+1. The code sends a POST request to tentatively find the length of the admin username (`id=1`), using a prepared SQL query, starting from length 1 and increasing until 40 (default value, assuming the username is less than 40 characters long). If the length is correct, the server will sleep for a specified `delay` (indicating the length is correct), otherwise, it doesn't sleep. The time it takes for the server to respond is measured, and if it is greater than the `delay` (meaning the server slept... or not always, as we'll see below), the length is considered correct.
 
 ```python
 for length in range(1, 41):  # Assuming username length is less than 40 characters
@@ -49,7 +49,7 @@ for length in range(1, 41):  # Assuming username length is less than 40 characte
         break
 ```
 
-1. Once the username length is found, the code sends consecutive POST requests, this time to find the admin username, by querying, for each character in the username, every possible value it could have (including NULL byte `b"\x00"`). The validation is done by checking if the server has taken longer to answer than the specified `delay` time, as before. The username is built character by character, and the process is repeated until the NULL byte (`b"\x00`) is found.
+2. Once the username length is found, the code sends consecutive POST requests, this time to find the admin username, by querying, for each character in the username, every possible value it could have (including NULL byte `b"\x00"`). The validation is done by checking if the server has taken longer to answer than the specified `delay` time, as before. The username is built character by character, and the process is repeated until the NULL byte (`b"\x00`) is found.
 
 ```python
 for idx_username in range(1, username_length + 1):
