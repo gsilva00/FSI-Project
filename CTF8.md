@@ -112,11 +112,11 @@ python3 exploit.py
 # Password hash:
 ```
 
-> This output is due to the fact that the default delay value was 0.3 seconds, which was too low for the server to respond in time. Due to the conditions (`if resp_length.elapsed.total_seconds() > delay`) interpreting the time taken for a (sleepless) response as response after a server sleep, it made the following incorrect assumptions::
+> This output is due to the fact that the default delay value was 0.3 seconds, which was too low for the server to respond in time. Due to the conditions (such as `if resp_length.elapsed.total_seconds() > delay`) interpreting the time taken for a (sleepless) response as a response after a server sleep, it made the following incorrect assumptions::
 >
-> - the correct username length being found (1)
-> - the correct first character of the username being the NULL byte (first one checked in `for ascii_val_username in (b"\x00" + string.printable.encode())`), which marks the end of the username
-> - the first character of the password hash being the NULL byte (first one checked in `for ascii_val_password in (b"\x00" + string.printable.encode())`), which marks the end of the password (and consequently, the exploit)
+> - the correct username length being found (1) - since the first request (with the first element of the range of values) already took longer than the delay
+> - the correct first character of the username being the NULL byte (first one checked in `for ascii_val_username in (b"\x00" + string.printable.encode())`), which marks the end of the username - since the first request already took longer than the delay
+> - the first character of the password hash being the NULL byte (first one checked in `for ascii_val_password in (b"\x00" + string.printable.encode())`), which marks the end of the password (and consequently, the exploit) - since the first request already took longer than the delay
 
 So, we increased the delay to 1 second, and ran the exploit again, getting the following output:
 
@@ -182,6 +182,8 @@ Password hash: $P$BuRuB0Mi3926H8h.hcA3pS
 ```
 
 The output seemed weird, due to the username being only `adm` and there being a lot of whitespace near the end of the password hash. Just in case, we tried to run the exploit again, to see if it outputted the same, but with a delay of 2 seconds, and got the following output:
+
+---
 
 ```plaintext
 Admin username length: 5
@@ -256,11 +258,13 @@ Username: admin
 Password hash: $P$BuRuB0Mi39266H8nh+,._bhcA 38pp+_4sBOS'1prVqUvPy,qN0#o1801
 ```
 
-This was a significantly different output, the username is now the complete word `admin` and the password hash is way longer and different. To verify, we then increased the delay to 3 seconds.
+This was a significantly different output, the username is now the complete word `admin` (so we know the previous answer was wrong) and the password hash is way longer and different. To verify, we then increased the delay to 3 seconds.
 
-After many tries, we experienced lower username lengths, different letters on the username (e.g. `adein`, etc...), and other weird outputs. This lead us to think about the possibility of connection instability, which could be causing the exploit to output incorrect results.
+---
 
-The delay just increases the time frame for the server to respond, and consequently, for the exploit to consider what a correct character is. So, to account for any possible network instability, we decided to massively increase the delay to 10 seconds. This makes the exploit significantly more reliable, but also way slower, as it has to wait 10 seconds for each character of the username and password hash:
+After many tries, we experienced lower username lengths, different letters on the username (e.g. `adein`), and other weird outputs. This lead us to think about the possibility of connection instability, which could be causing the exploit to output incorrect results.
+
+The delay just increases the time frame for the server to respond, and consequently, for the exploit to consider what a correct response is. So, to account for any possible network instability, we decided to increase the delay to 10 seconds, to widen the time difference between a sleepless response and a response after sleeping for a `delay`. This makes the exploit significantly more reliable, but also way slower, as it has to wait 10 seconds for each character of the username and password hash:
 
 ```plaintext
 Admin username length: 5
@@ -311,10 +315,14 @@ Password hash: $P$BuRuB0Mi3926H8h.hcA3pSrUPyq0o10
 
 After 5 tries, the exploit always outputted the same username and password hash as above, so we considered this the correct output.
 
+---
+
 ### Task 4: The attack will allow you to extract information from the server's database. In particular, you want to find out the administrator's password, but as good security rules dictate, this is not stored cleanly in the database, but only a hash of the original password. For this server, and in more detail, what is the password storage policy?
 
 By searching online for: "what hash function does wordpress use", we found out that WordPress uses the PHP Password Hashing Framework (PHPass). This matches the information that we got in `concerned-hacker`'s comment, given that `$P$` is the prefix for PHPass hashes (and `B` encodes the iteration count).
+
 Furthermore, nowadays, PHPass uses the `bcrypt` algorithm (based on the Blowfish cypher), the default using the `password_hash()` PHP function. The algorithm includes a unique salt, which is a random string of characters that is added to the password before hashing, so that, if two users have the same password, their hashes will be different.
+
 However, due to lack of PHP support for `bcrypt` in the past, and backwards compatibility, WordPress also supports the `MD5`, which is still used for older passwords, even though it is considered a weak algorithm.
 
 ### Task 5: Is storing a password hash secure in the sense that it makes it impossible to recover the original password? This problem is very common not only in the case of vulnerabilities, but also in the case of data leaks. There are various ways of trying to reverse hash functions for passwords and tools to automate the process
@@ -327,10 +335,13 @@ Given that we found the password hash, and the password storage policy, we can t
 
 > Note: The `-m 400` flag specifies the hash type (PHPass), the `-a 0` flag specifies the attack mode (dictionary attack), and the `-o cracked.txt` flag specifies the output file for the cracked password.
 >
-> Note 2: The origin of the `rockyou` wordlist is from a data breach on a company with the same name, in 2009, which consisted of a series of terrible security practices, such as storing passwords in plaintext, sending them in plaintext for password recovery, having a system that is vulnerable to 10-year-old SQL injection vulnerabilities, and many more, resulting in the breach of 32 million accounts, totaling 14.3 million unique passwords.
-> After the attack finished, we got an output containing a lot of interesting information, including hardware information, the time it took to crack the hash, the number of hashes processed per second, the size of the dictionary/wordlist, how far the wordlist was processed until the password was found, and many more:
+> Note 2: The origin of the `rockyou` wordlist is from a data breach on a company of the same name, in 2009, which consisted of a series of terrible security practices, such as storing passwords in plaintext, sending them in also plaintext for password recovery, having a system that is vulnerable to 10-year-old SQL injection vulnerabilities, and many more, resulting in the breach of 32 million accounts, totaling 14.3 million unique passwords, which make up the `rockyou` wordlist.
+
+After the hashcat decryption finished, we got an output containing a lot of interesting information, including hardware information, the time it took to crack the hash, the number of hashes processed per second, the size of the dictionary/wordlist, how far the wordlist was processed until the password was found, and many more:
 
 ![Hashcat output](images/CTF8/hashcat_output.png)
+
+---
 
 Therefore, we can conclude that storing a password hash does not make it impossible to recover the original password, given that we are able to crack hashes using methods such as dictionary attacks.
 
