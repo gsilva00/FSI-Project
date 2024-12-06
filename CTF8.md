@@ -315,8 +315,6 @@ Password hash: $P$BuRuB0Mi3926H8h.hcA3pSrUPyq0o10
 
 After 5 tries, the exploit always outputted the same username and password hash as above, so we considered this the correct output.
 
----
-
 ### Task 4: The attack will allow you to extract information from the server's database. In particular, you want to find out the administrator's password, but as good security rules dictate, this is not stored cleanly in the database, but only a hash of the original password. For this server, and in more detail, what is the password storage policy?
 
 By searching online for: "what hash function does wordpress use", we found out that WordPress uses the PHP Password Hashing Framework (PHPass). This matches the information that we got in `concerned-hacker`'s comment, given that `$P$` is the prefix for PHPass hashes (and `B` encodes the iteration count).
