@@ -93,6 +93,7 @@ def find_flag():
         end_time = time.time()
         elapsed_time = end_time - start_time
         print(f"Elapsed time: {elapsed_time:.2f} seconds")
+
         return decoded_msg
     except UnicodeDecodeError:
       # To not crash when bytes are not decodable to UTF-8
