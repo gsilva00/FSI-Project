@@ -62,7 +62,7 @@ def dec(k, c, nonce):
 
 **Answer 2:** The problem with the `gen()` function is that only the last 3 bytes are random, while the first 13 bytes are all zeroes. As the code comment suggests, it does make the encryption faster, but it also makes it way easier to break, because the key is not fully random and it has a predictable pattern. The lack of randomness in the key is the vulnerability we will exploit through a brute-force attack, because we only need to find the last 3 bytes, which means, we need to try **256^3 == 16777216** possibilities. In the worst case that is done in **490.19 seconds**, which is a perfectly feasible amount of time. If the key was properly generated, there would be **256^16 == 3.4028237 × 10^38** possibilities, which, using today's technology, is far too computationally expensive, and therefore time-consuming, as we'll see below.
 
-> Timing the brute-force attack was executed in a Dell Latitude 5490 laptop with an Intel® Core™ i5-8350U CPU @ 1.70GHz×8, 16GB RAM, running Ubuntu 20.04.5 LTS. Naturally, the time will be lower in a more powerful computer, or through the use of parallel computation. Therefore, it is just an estimate, but it serves to show that it is possible to break the key in a reasonable amount of time.
+> Note: Timing the brute-force attack was executed in a Dell Latitude 5490 laptop with an Intel® Core™ i5-8350U CPU @ 1.70GHz×8, 16GB RAM, running Ubuntu 20.04.5 LTS. Naturally, the time will be lower in a more powerful computer, or through the use of parallel computation. Therefore, it is just an estimate, but it serves to show that it is possible to break the key in a reasonable amount of time.
 
 ## Exploiting the vulnerability
 
@@ -103,9 +103,11 @@ def find_flag():
 find_flag()
 ```
 
-> Used the `unhexlify()` function to convert the hex strings to bytes, as per the guidelines.
-> Added `time.time()` variable to measure the time it takes to find the flag. It was also used to measure the worst-case scenario's time, provided a very small code modification.
-> Added a try-except block to avoid crashing when a byte is not valid utf-8 (exception thrown by `decoded_msg.decode('utf-8')`)
+> Note 1: Used the `unhexlify()` function to convert the hex strings to bytes, as per the guidelines.
+>
+> Note 2: Added `time.time()` variable to measure the time it takes to find the flag. It was also used to measure the worst-case scenario's time, provided a very small code modification.
+>
+> Note 3: Added a try-except block to avoid crashing when a byte is not valid utf-8 (exception thrown by `decoded_msg.decode('utf-8')`)
 
 Upon running this code, after **71.18 seconds** we found the flag: `flag{ngcezdfajnlylogx}`. We submitted it in the CTF platform and completed the challenge!
 
@@ -124,7 +126,7 @@ Image 1: `find_flag()`'s function output
 
 Thus, we can extrapolate how many possibilities we could test in 10 years:
 
-So, in **10 years** we could test **34225.945041719 × 10×365.25×24×60×60 == 1.080088683 × 10^13 possibilities**. To make it impossible for the personal machines used in the attack to discover the key in the worst case, over a period of 10 years, we need to find an offset that makes the number of possibilities greater than **1.080088683 × 10^13** - **256^n > 1.080088683 × 10^13** <=> **n > 5.41202**. Therefore, the offset would have to be at least 6 bytes long (**256^6 == 2.814749767 × 10^14** combinations).
+So, in **10 years** we could test **34225.945041719 × 10×365.25×24×60×60 == 1.080088683 × 10^13 possibilities**. To make it impossible for the personal machines used in the attack to discover the key in the worst case, over a period of 10 years, we need to find an offset that makes the number of possibilities greater than **1.080088683 × 10^13** (**256^n > 1.080088683 × 10^13** <=> **n > 5.41202**). Therefore, the offset would have to be at least 6 bytes long (**256^6 == 2.814749767 × 10^14** combinations).
 
 > Note 1: `365.25` is used to account for leap years.
 >
@@ -140,6 +142,6 @@ This corroborates our previous analysis, where we concluded that a properly gene
 
 - If we want to keep following a brute-force approach, we just need to test all 2^8 possibilities for each possible key, (resulting in **256^3×256 == 256^4 == 4294967296** possibilities), which following the same logic as before, would take **4294967296 / 33573.904864822 == 127925.759999998 seconds == 2132.096 minutes == 35.534933333 hours** which is significantly longer than only having to test the possibilities for the last 3 bytes, but still a reasonable amount of time.
 
-- Due to the smaller size of the nonce (in AES it's always 16 bytes (128 bits)), the chances of repeating the same nonce are higher (collisions). That is, because of [how the AES Counter Mode encryption works](/images/CTF11/scheme_CTR_encryption.png), for two different messages, given the same key, the same nonce would generate the same keystream. Furthermore, naturally, the more messages we encrypt with the same key, the higher the chances of repeating the nonce (**birthday paradox**), whose value can only be 256 possibilities. With that information, the attacker can `XOR` two ciphertexts ( **C1 ⊕ C2 == (M1 ⊕ K) ⊕ (M2 ⊕ K) == M1 ⊕ M2**, where the keystream (K) cancels itself ), and if the attacker knows one of the plaintexts, they can find the other one ( **M2 == (C1 ⊕ C2)⊕M1 == M1 ⊕ M2 ⊕ M1**, where message1 cancels itself as well). Even if a message is not fully known, the attacker can still find patterns in the plaintext, which leads him to proceed in the same way.
+- Due to the smaller size of the nonce (in AES it's always 16 bytes (128 bits)), the chances of repeating the same nonce are higher (collisions). That is, because of [how the AES Counter Mode encryption works](/images/CTF11/scheme_CTR_encryption.png), for two different messages, given the same key, the same nonce would generate the same keystream. Furthermore, naturally, the more messages we encrypt with the same key, the higher the chances of repeating the nonce (**birthday paradox**), whose value can only be 256 possibilities. With that information, the attacker can `XOR` two ciphertexts ( **C1 ⊕ C2 == (M1 ⊕ K) ⊕ (M2 ⊕ K) == M1 ⊕ M2**, where the keystream (K) cancels itself ), and if the attacker knows one of the plaintexts, they can find the other one ( **M2 == (C1 ⊕ C2) ⊕ M1 == M1 ⊕ M2 ⊕ M1**, where message1 cancels itself as well). Even if a message is not fully known, the attacker can still find patterns in the plaintext, which leads him to proceed in the same way.
 
 In conclusion, the use of a 1-byte nonce that is not sent over the network is not an effective countermeasure to strengthen the security of these cipher schemes, as it is not only still feasible to break the key in a reasonable time, but it increases the chances of repeating the nonce as well, which is a major vulnerability in the encryption process, even though there is the benefit of it not being sent over the network and therefore not being intercepted.
