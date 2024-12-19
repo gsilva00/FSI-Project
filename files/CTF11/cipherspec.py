@@ -37,7 +37,7 @@ def find_flag():
   start_time = time.time()
 
   offset = 3
-  for i in range(256**3):  # 256^3 possible combinations for the 3 bytes
+  for i in range(256**offset):  # 256^3 possible combinations for the 3 bytes
     key = bytearray(b'\x00'*(KEYLEN-offset))
     key.extend(i.to_bytes(offset, 'big'))  # Fill the rest of the key with the 3 bytes
 
@@ -46,7 +46,7 @@ def find_flag():
       decoded_msg = decrypted.decode('utf-8')
       if decoded_msg.startswith("flag{") and decoded_msg.endswith("}"):
         print(f"Found flag: {decoded_msg}")
-        print(f"Number of iterations: {i + 1}")
+        print(f"Number of iterations: {i+1}")
 
         end_time = time.time()
         elapsed_time = end_time - start_time
