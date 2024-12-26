@@ -88,14 +88,12 @@ pkt = sniff(iface = 'br-a12c7db74bf8',filter='icmp',prn = print_pkt)
 
 For the sniffing and spoofing programs to work, we have to run them with root privilege.
 
-<img src="images/LOGBOOK12/
-1.1A-root-antesdeping-com_rootprivilege.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1A-root-antesdeping-com_rootprivilege.png" width="400" alt="task1-A"/>
 
 
 If we ping host B from host A:
 
-<img src="images/LOGBOOK12/
-1.1A-A-ping-com_rootprivilege.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1A-A-ping-com_rootprivilege.png" width="400" alt="task1-A"/>
 
 
 The result will be the print out of the multiple sniffed packages with the following format:
@@ -106,8 +104,7 @@ The result will be the print out of the multiple sniffed packages with the follo
 
 However, if we try run the code without root privileges:
 
-<img src="images/LOGBOOK12/
-1.1A-root-antesdeping-sem_rootprivilege.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1A-root-antesdeping-sem_rootprivilege.png" width="400" alt="task1-A"/>
 
 We will be informed that `Operation not permitted`. The packets weren't sniffed, because this operation requires elevated privileges.
 
@@ -126,8 +123,7 @@ pkt = sniff(iface = 'br-a12c7db74bf8',filter='icmp',prn = print_pkt)
 
 For this example, we have to dig deeper in the manual. Based on [this website](https://biot.com/capstats/bpf.html), we can conclude:
 
-<img src="images/LOGBOOK12/
-1.1Bcodigo-tcp.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1Bcodigo-tcp.png" width="500" alt="task1-A"/>
 
 - `tcp` : only captures TCP packets
 - `src host 10.9.0.5` : only captures packets that are sent from the Host B, with IP address being 10.9.0.6
@@ -135,13 +131,11 @@ For this example, we have to dig deeper in the manual. Based on [this website](h
 
 Sending a message by Host B:
 
-<img src="images/LOGBOOK12/
-1.1B-tcp-B.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1B-tcp-B.png" width="400" alt="task1-A"/>
 
 We get 3 packets with the format:
 
-<img src="images/LOGBOOK12/
-1.1B-tcp-root.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1B-tcp-root.png" width="500" alt="task1-A"/>
 
 > As we can see from looking at the picture, the destination port is `telnet`, which is normally located at theport 23. This ensures that our packet sniffing was successful.
 
@@ -149,8 +143,7 @@ We get 3 packets with the format:
 
 For this step, the guide mentioned not to use the VM subnet we are using for the hosts. Which means, we have to find a subnet in our VM that isn't `10.9.0.1`. If we look more in the `ifconfig` list, we will find other subnets we can use, such as:
 
-<img src="images/LOGBOOK12/
-1.1Bifconfig-subnet.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1Bifconfig-subnet.png" width="500" alt="task1-A"/>
 
 This subnet is represented by the IP address prefix of `10.0.2.0/24`.
 
@@ -159,20 +152,17 @@ This subnet is represented by the IP address prefix of `10.0.2.0/24`.
 
 Therefore, the filter to only capture packets of this subnet is the following:
 
-<img src="images/LOGBOOK12/
-1.1Bcodigo-subnet.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1Bcodigo-subnet.png" width="400" alt="task1-A"/>
 
 - `net` : only captures packets of that subnet. In this case to or from subnet `10.0.2.0/24`.
 
 If we try to ping from hostA the subnet `10.0.2.0/24`:
 
-<img src="images/LOGBOOK12/
-1.1B-subnet-A.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1B-subnet-A.png" width="500" alt="task1-A"/>
 
 And sniff the packets, we will get packets with this format:
 
-<img src="images/LOGBOOK12/
-1.1B-subnet-root.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.1B-subnet-root.png" width="500" alt="task1-A"/>
 
 ## Task 2: Spoofing ICMP Packets
 On this task, the objective is to spoof packets coming from an arbritary source IP address. In more detail, we will focus on spoofing ICMP echo request packets, so that they are delivered in another host of the same network.
@@ -193,8 +183,7 @@ send(p)                    # sends packet p
 
 We can also view the list of attributes of the IP class by: `ls (a)` or `ls(IP)` or `a.show()` or `IP.show()`.
 
-<img src="images/LOGBOOK12/
-ls(a).png" width="500" alt="task2"/>
+<img src="images/LOGBOOK12/ls(a).png" width="500" alt="task2"/>
 
 If we look closely, above dst fiel, we have src IP field, which can be useful to impersonate an host.
 
@@ -214,13 +203,11 @@ send(p)
 
 Before start running the program, let's not forget to make the program with root privileges:
 
-<img src="images/LOGBOOK12/
-1.2-root.png" width="400" alt="task2"/>
+<img src="images/LOGBOOK12/1.2-root.png" width="400" alt="task2"/>
 
 If we look through Wireshark while executing the program, we notice two ICMP packets. The first one is the echo request we created. It is being delivered to Host B, which in turn, accepts the request. Thus, an echo reply packet is sent to the spoofed IP address, which belongs to Host A, even though he didn't send any request to Host B.
 
-<img src="images/LOGBOOK12/
-1.2-Wireshark.png" width="600" alt="task1-A"/>
+<img src="images/LOGBOOK12/1.2-Wireshark.png" width="600" alt="task1-A"/>
 
 In summary, we were able to impersonate Host A. It was a successful attack.
 
@@ -245,18 +232,15 @@ The types of reply packets we could get from the packet we sent are the followin
 
 With this in mind, we developed the code:
 
-<img src="images/LOGBOOK12/
-1.3-codigo-real-8.8.8.8.png" width="400" alt="task3"/>
+<img src="images/LOGBOOK12/1.3-codigo-real-8.8.8.8.png" width="400" alt="task3"/>
 
 After making sure we execute the code with root privilege, the result is:
 
-<img src="images/LOGBOOK12/
-1.3-codigo-8.8.8.8.png" width="250" alt="task3"/>
+<img src="images/LOGBOOK12/1.3-codigo-8.8.8.8.png" width="250" alt="task3"/>
 
 We can conlcude the final destination, `8.8.8.8` is in a distance of 17. We can verify it by doing the normal traceroute function:
 
-<img src="images/LOGBOOK12/
-1.3-traceroute-8.8.8.8.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK12/1.3-traceroute-8.8.8.8.png" width="500" alt="task3"/>
 
 Which also returns the awnser of 17, confirming our solution and code.
 
@@ -278,8 +262,7 @@ To forge the echo reply, we will need more knowledge. Digging more through the i
 
 Therefore, we reached the final code to be:
 
-<img src="images/LOGBOOK12/
-1.4-codigo.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-codigo.png" width="500" alt="task3"/>
 
 After putting the code with root privileges, we execute and see the results from three different scenarios:
 
@@ -293,18 +276,15 @@ After putting the code with root privileges, we execute and see the results from
 
 In Host A, we ping the IP address 1.2.3.4 :
 
-<img src="images/LOGBOOK12/
-1.4-A-1.2.3.4.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-A-1.2.3.4.png" width="500" alt="task3"/>
 
 From reading the image, 3 packets were transmitted. Besides, 3 packets were also received. Lets see if it was us:
 
-<img src="images/LOGBOOK12/
-1.4-root-1.2.3.4.png" width="300" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-root-1.2.3.4.png" width="300" alt="task3"/>
 
 It was us, but lets check through Wireshark how the packet flow looks:
 
-<img src="images/LOGBOOK12/
-1.4-Wireshark-1.2.3.4.png" width="600" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-Wireshark-1.2.3.4.png" width="600" alt="task3"/>
 
 After each request packet, a reply packet follows. Meaning the code we are executing captures the request packet, forges a reply packet, and host A receives it without problems. A sucessful transmission.
 
@@ -320,8 +300,7 @@ If we look carefully in the logs, we see the first message was a broadcast packe
 
 Well, for that we need to know the route that the packet from Host A is taking to reach 1.2.3.4. We can see the first route by executing the command:
 
-<img src="images/LOGBOOK12/
-1.4-route-1.2.3.4.png" width="400" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-route-1.2.3.4.png" width="400" alt="task3"/>
 
 It looks like the packet needs to be sent first to the attacker machine to reach 1.2.3.4. This is due to `1.2.3.4` not belongging to the same network. This means it is easy to the attacker machine to get the packet and sent a reply.
 
@@ -330,25 +309,21 @@ It looks like the packet needs to be sent first to the attacker machine to reach
 
 In Host A, we ping the IP address 10.9.0.99 :
 
-<img src="images/LOGBOOK12/
-1.4-A-10.9.0.99.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-A-10.9.0.99.png" width="500" alt="task3"/>
 
 From reading the image, 3 packets were transmitted. In the contrary, no packet was received by Host A. Wireshark confirms the same:
 
-<img src="images/LOGBOOK12/
-1.4-Wireshark-10.9.0.99.png" width="600" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-Wireshark-10.9.0.99.png" width="600" alt="task3"/>
 
 Wireshark showcases a broadcast to find the MAC address of 10.9.0.99. Since ` 10.9.0.99` belongs to the same LAN, then it doesn't need to be passed through the attacker machine, **failling** the transmission of echo reply. We can confirm the route of the packet:
 
-<img src="images/LOGBOOK12/
-1.4-route-10.9.0.99.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-route-10.9.0.99.png" width="500" alt="task3"/>
 
 #### Scenario 3 - `ping 8.8.8.8` - an existing host on the Internet
 
 In Host A, we ping the IP address 8.8.8.8 :
 
-<img src="images/LOGBOOK12/
-1.4-A-8.8.8.8.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-A-8.8.8.8.png" width="500" alt="task3"/>
 
 From reading the image, 3 packets were transmitted. In addition, 6 packets were received but 3 of them were duplicates of the other messages. Why there are duplicates? The reason is simple: 
 
@@ -356,12 +331,10 @@ From reading the image, 3 packets were transmitted. In addition, 6 packets were 
 
 - The other 3 packet replies, were forged and sent by the `attacker machine` when it captured the request packet. Since the final destination addresss is outside LAN, then the request packet had to go through the attacker machine, hence being sniffed. It says they are duplicates because we are copying the exact data onto the forged replies (including the source of the reply), as it would be in an original reply.
 
-<img src="images/LOGBOOK12/
-1.4-Wireshark-8.8.8.8.png" width="600" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-Wireshark-8.8.8.8.png" width="600" alt="task3"/>
 
 We can check that the request packet has to go through the attacker machine:
 
-<img src="images/LOGBOOK12/
-1.4-route-8.8.8.8.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK12/1.4-route-8.8.8.8.png" width="500" alt="task3"/>
 
 Yes, it was a successful transmission. But we weren't the only ones transmitting, which could raise some flags...
