@@ -6,7 +6,7 @@ In this CTF challenge, we were given a [Python script](/files/CTF12/gen_example.
 
 The missing functions for the RSA encryption of a message, we need to implement:
 
-- `getRandomPrime()` - to find `p` and `q` starting on the given value (given the ambiguity of the guidelines, it might be necessary to search for numbers before the given value). According to the guidelines: "p is a prime around `2^(500+offset)` and q is a prime around `2^(501+offset)`", where the `offset` is `(((t-1)*10 + g) // 2)`, with `t` being our class number `12`, and `g` being our group number `2`, and `decrypt()`:
+- `getRandomPrime()` - to find `p` and `q` starting on the given value (given the ambiguity of the guidelines, it might be necessary to search for numbers before the given value). Also according to the guidelines: "p is a prime around `2^(500+offset)` and q is a prime around `2^(501+offset)`", where the `offset` is `(((t-1)*10 + g) // 2)`, with `t` being our class number `12`, and `g` being our group number `2`. For each prime candidate, we check its validity using the `isPrime` function, which is analyzed in the next section.
 
 ```python
 def getRandomPrime(exp):
@@ -18,7 +18,7 @@ def getRandomPrime(exp):
   return candidate
 ```
 
-- `extendedEuclidean()` - to find the modular inverse of `e` and `phi`. Given that the Extended Euclidean Algorithm is used to find the greatest common divisor of two numbers, as well as the coefficients of Bézout's identity, and we think that is separate from the modular inverse calculation, we will implement a separate function for the modular inverse `modInv()`, which calls the `extendedEuclidean()` function:
+- `extendedEuclidean()` - to find the modular inverse of `e` and `phi`. Given that the Extended Euclidean Algorithm is used to find the greatest common divisor of two numbers, as well as the coefficients of Bézout's identity, and in our opinion that responsibility is separate from the modular inverse calculation, we will implement a separate function for the modular inverse `modInv()`, which calls the `extendedEuclidean()` function:
 
 ```python
 def modInv(a, b):
@@ -73,8 +73,6 @@ def isPrime(n, k=30):
   for _ in range(k):
     a = random.randint(2, n-2)
     x = pow(a, d, n)
-    if x == 1 or x == n-1:
-      continue
     for _ in range(s):
       y = pow(x, 2, n)
       if y == 1 and x != 1 and x != n-1:
@@ -85,9 +83,13 @@ def isPrime(n, k=30):
   return True
 ```
 
+> Note 1: 3 is included as a base case because it is adjacent to 2 and also a prime, so there is no need to perform the whole algorithm to find such a simple prime. Beyond that, the primes stop being adjacent, and listing more would be unnecessary work. The same goes for the even numbers, as they are not prime by definition, so we can return False. Exhaustively listing all the divisors of a number does not make sense for the same reason (numbers are infinite). In the same vein, as a work around, using a `for` loop to check all the numbers up to the square root of `n' would be extremely inefficient, due to the large size of the primes used in this context (RSA).
+>
+> Note 2: As this is a probabilistic algorithm, the larger the number of rounds `k`, the more accurate the result. The default value of `k` is set to 30, which is a good balance between accuracy and performance, as a higher value would also increase the number of iterations in the loop.
+
 ## Task 2 - Implementing RSA
 
-In the given [gen_example.py](/files/CTF12/gen_example.py) script, the encryption of the plaintext, including all the necessary parameters for the RSA encryption is present, but the decryption function is missing. Therefore, we need to implement the decryption function - `decryptCipher()`:
+In the given [gen_example.py](/files/CTF12/gen_example.py) script, the implementation of the encryption of the plaintext, including all the necessary parameters associated with it is present, but the decryption function is missing. Therefore, we need to implement it - `decryptCipher()`:
 
 ```python
 def decryptCipher():
@@ -142,9 +144,9 @@ def decrypt_rsa(ciphertext, d, n):
 
 **Question 1:** How can I use the information I have to infer the values used in the RSA that encrypted the flag?
 
-**Answer 1:** Given the public exponent `e` and the modulus `n`, we can try and infer the values of `p` and `q` by finding the prime factors of `n`. With the goal of discovering the value of `phi`, which is calculated using these primes, the difficulty lies in finding the correct values of these primes, and that's why RSA is considered secure. As we're given the range of the primes for each number, there are way less computations that we need to perform to find the correct values. In fact, we only needed to start from the given values and search 1105 numbers to find the correct values of `p` and `q`.
+**Answer 1:** Given the public exponent `e` and the modulus `n`, we can try and infer the values of `p` and `q` by finding the prime factors of `n`. With the goal of discovering the value of `phi`, which is calculated using these primes, the difficulty lies in finding the correct values of these 2 primes, and that's why RSA is considered secure. As we're given the range of the primes for each number, there are way less computations that we need to perform to find the correct values. In fact, the brute-forcing of the primes in this CTF was made to be relatively easy, as we only needed to start from the given values and search 1105 numbers to find the correct values of `p` and `q`.
 
-Once we have the primes, we can calculate the private exponent `d` using the modular inverse of `e` and `phi`, where `phi = (p-1)*(q-1)`. Finally, we can decrypt the ciphertext using the private exponent `d` and the modulus `n`.
+Once we have the primes, we can calculate the private exponent `d` using the modular inverse of `e` and `phi`, where `phi = (p-1)*(q-1)`. Finally, we can decrypt the ciphertext using the private exponent `d` and the modulus `n`, simply by using the `pow()` function, given how the RSA encryption and decryption work.
 
 **Question 2:** How can I find out if my inference is correct?
 
@@ -152,4 +154,6 @@ Once we have the primes, we can calculate the private exponent `d` using the mod
 
 **Question 3:** Finally, how can I extract my key from the cryptogram I received?
 
-**Answer 3:** We can extract the flag from the decrypted plaintext by finding the substring that starts with `{` and ends with `}`. In this case, the whole decrypted plaintext is the flag, `flag{mubdidsmsqrllmkk}`, which we submitted in the CTF platform and completed the challenge.
+**Answer 3:** By finding the substring that starts with `{` and ends with `}`. In this case, the whole decrypted plaintext is the flag - `flag{mubdidsmsqrllmkk}` - which we submitted in the CTF platform and completed the challenge:
+
+![flag_after_bruteforce](/images/CTF12/brute_force_result.png)

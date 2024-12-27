@@ -29,8 +29,6 @@ def isPrime(n, k=30):
     for _ in range(k):
         a = random.randint(2, n-2)
         x = pow(a, d, n)
-        if x == 1 or x == n-1:
-            continue
         for _ in range(s):
             y = pow(x, 2, n)
             if y == 1 and x != 1 and x != n-1:
@@ -54,7 +52,7 @@ def modInv(a, b):
     if g != 1:
         print("ERROR!! gcd(e, phi) != 1")
 
-    print(f"d is {x % b}")
+    # print(f"d is {x % b}")
     return x % b # returns d such that (d * e) % v == 1
 
 def extendedEuclidean(a, b):
@@ -73,7 +71,7 @@ def extendedEuclidean(a, b):
         old_s = -old_s
         old_t = -old_t
 
-    print(f"old_r: {old_r}, old_s: {old_s}, old_t: {old_t}")
+    # print(f"old_r: {old_r}, old_s: {old_s}, old_t: {old_t}")
     return old_r, old_s, old_t
 
 
@@ -149,7 +147,8 @@ def find_primes(n):
         if isPrime(candidate_p) and n % candidate_p == 0:
             candidate_q = n // candidate_p
             if isPrime(candidate_q):
-                print(f"Found p: {candidate_p}, q: {candidate_q}")
+                # print(f"Found p: {candidate_p}, q: {candidate_q}")
+                print("Found primes p and q")
                 return candidate_p, candidate_q
     print(f"Primes not found for n: {n}")
     return None, None
