@@ -157,3 +157,5 @@ Once we have the primes, we can calculate the private exponent `d` using the mod
 **Answer 3:** By finding the substring that starts with `{` and ends with `}`. In this case, the whole decrypted plaintext is the flag - `flag{mubdidsmsqrllmkk}` - which we submitted in the CTF platform and completed the challenge:
 
 ![flag_after_bruteforce](/images/CTF12/brute_force_result.png)
+
+Image 1. Flag with the decrypted plaintext after the brute force of the primes.
