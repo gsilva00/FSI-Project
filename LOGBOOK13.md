@@ -4,13 +4,13 @@
 
 In the last week of LOGBOOKs and CTFs, we delved in the world of network communications. In particular, we looked deeper in packet sniffing and packet spoofing. How to use tools like Scapy and Wireshark and how they can be useful to attack hosts.
 
-## (Work done in Week #12)
+## (Work done in Week #13)
 
 ### 1º Understand the environment
 
 Before starting the attacks, we need to understand and prepare the environment. In other words, we will use three containers (doing with three VMs is also doable), which all will be connected to the same LAN - Local Area Network. The VM will be also connected to this network. The LAN will look like this:
 
-<img src="images/LOGBOOK12/network-hosts.png" width="400" alt="network-hosts"/>
+<img src="images/LOGBOOK13/network-hosts.png" width="400" alt="network-hosts"/>
 
 > The network has an IP prefix of `10.9.0.0/24`, where `/24` represents the Subnet mask. This Subnet mask indicates that the first 24 bits of the ip address are the network bits, while the remaining 8 bits indicate which host (machine or server) in specific we want from that network.
 
@@ -31,11 +31,11 @@ To have successful attacks we need to redirect our code to the network interface
 
 1. `ifconfig`- lists network interfaces. The IP address is `10.9.0.1`.
 
-<img src="images/LOGBOOK12/ifconfig.png" width="400" alt="ifconfig"/>
+<img src="images/LOGBOOK13/ifconfig.png" width="400" alt="ifconfig"/>
 
 2. `docker network ls` - lists among other things the network ID. The name of the network is `seed-net`.
 
-<img src="images/LOGBOOK12/network-ls.png" width="400" alt="network-ls"/>
+<img src="images/LOGBOOK13/network-ls.png" width="400" alt="network-ls"/>
 
 We can conclude the name of the network interface inside the VM is `a12c7db74bf8`.
 
@@ -71,7 +71,7 @@ def print_pkt(pkt):
 pkt = sniff(iface = 'br-c93733e9f913',filter='icmp',prn = print_pkt)
 ```
 
-- iface: the interfaces we want to sniff: ex.: ` iface=['br-c93733e9f913','enp0s3']`
+- iface: the interfaces we want to sniff: ex.: `iface=['br-c93733e9f913','enp0s3']`
 
 - filter: the type of packets we want to sniff. In this case, we will get icmp packets.
 
@@ -87,24 +87,24 @@ pkt = sniff(iface = 'br-a12c7db74bf8',filter='icmp',prn = print_pkt)
 
 For the sniffing and spoofing programs to work, we have to run them with root privilege.
 
-<img src="images/LOGBOOK12/1.1A-root-antesdeping-com_rootprivilege.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1A-root-antesdeping-com_rootprivilege.png" width="400" alt="task1-A"/>
 
 If we ping host B from host A:
 
-<img src="images/LOGBOOK12/1.1A-A-ping-com_rootprivilege.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1A-A-ping-com_rootprivilege.png" width="400" alt="task1-A"/>
 
 The result will be the print out of the multiple sniffed packages with the following format:
 
-<img src="images/LOGBOOK12/1.1A-root-depoisdeping-com_rootprivilege-pt1.png" width="300" alt="task1-A"/>
-<img src="images/LOGBOOK12/1.1A-root-depoisdeping-com_rootprivilege-pt2.png" width="600" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1A-root-depoisdeping-com_rootprivilege-pt1.png" width="300" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1A-root-depoisdeping-com_rootprivilege-pt2.png" width="600" alt="task1-A"/>
 
 However, if we try run the code without root privileges:
 
-<img src="images/LOGBOOK12/1.1A-root-antesdeping-sem_rootprivilege.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1A-root-antesdeping-sem_rootprivilege.png" width="400" alt="task1-A"/>
 
 We will be informed that `Operation not permitted`. The packets weren't sniffed, because this operation requires elevated privileges.
 
-### B - Running the sniffing code with BPF syntax filters.
+### B - Running the sniffing code with BPF syntax filters
 
 The previous code runs a Scapy's filter to only let through ICMP packets. Nevertheless, if we are interested in broadening or restricting the types pf packets we get, we have to use different filters. To set the filters in Scapy, we have to follow the BPF(Berkeley Packet Filter) syntax.
 
@@ -116,11 +116,11 @@ We use the same code as before:
 pkt = sniff(iface = 'br-a12c7db74bf8',filter='icmp',prn = print_pkt)
 ```
 
-#### - Capture any TCP packet that comes from a particular IP and with a destination port number 23.
+#### - Capture any TCP packet that comes from a particular IP and with a destination port number 23
 
 For this example, we have to dig deeper in the manual. Based on [this website](https://biot.com/capstats/bpf.html), we can conclude:
 
-<img src="images/LOGBOOK12/1.1Bcodigo-tcp.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1Bcodigo-tcp.png" width="500" alt="task1-A"/>
 
 - `tcp` : only captures TCP packets
 - `src host 10.9.0.5` : only captures packets that are sent from the Host B, with IP address being 10.9.0.6
@@ -128,19 +128,19 @@ For this example, we have to dig deeper in the manual. Based on [this website](h
 
 Sending a message by Host B:
 
-<img src="images/LOGBOOK12/1.1B-tcp-B.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1B-tcp-B.png" width="400" alt="task1-A"/>
 
 We get 3 packets with the format:
 
-<img src="images/LOGBOOK12/1.1B-tcp-root.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1B-tcp-root.png" width="500" alt="task1-A"/>
 
 > As we can see from looking at the picture, the destination port is `telnet`, which is normally located at the port 23. This ensures that our packet sniffing was successful.
 
-#### - Capture packets that come from or to go to a particular subnet.
+#### - Capture packets that come from or to go to a particular subnet
 
 For this step, the guide mentioned not to use the VM subnet we are using for the hosts. Which means, we have to find a subnet in our VM that isn't `10.9.0.1`. If we look more in the `ifconfig` list, we will find other subnets we can use, such as:
 
-<img src="images/LOGBOOK12/1.1Bifconfig-subnet.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1Bifconfig-subnet.png" width="500" alt="task1-A"/>
 
 This subnet is represented by the IP address prefix of `10.0.2.0/24`.
 
@@ -149,17 +149,17 @@ This subnet is represented by the IP address prefix of `10.0.2.0/24`.
 
 Therefore, the filter to only capture packets of this subnet is the following:
 
-<img src="images/LOGBOOK12/1.1Bcodigo-subnet.png" width="400" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1Bcodigo-subnet.png" width="400" alt="task1-A"/>
 
 - `net` : only captures packets of that subnet. In this case to or from subnet `10.0.2.0/24`.
 
 If we try to ping from hostA the subnet `10.0.2.0/24`:
 
-<img src="images/LOGBOOK12/1.1B-subnet-A.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1B-subnet-A.png" width="500" alt="task1-A"/>
 
 And sniff the packets, we will get packets with this format:
 
-<img src="images/LOGBOOK12/1.1B-subnet-root.png" width="500" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.1B-subnet-root.png" width="500" alt="task1-A"/>
 
 ## Task 2: Spoofing ICMP Packets
 
@@ -181,7 +181,7 @@ send(p)                    # sends packet p
 
 We can also view the list of attributes of the IP class by: `ls (a)` or `ls(IP)` or `a.show()` or `IP.show()`.
 
-<img src="images/LOGBOOK12/ls(a).png" width="500" alt="task2"/>
+<img src="images/LOGBOOK13/ls_a_.png" width="500" alt="task2"/>
 
 If we look closely, above dst fiel, we have src IP field, which can be useful to impersonate an host.
 
@@ -201,11 +201,11 @@ send(p)
 
 Before start running the program, let's not forget to make the program with root privileges:
 
-<img src="images/LOGBOOK12/1.2-root.png" width="400" alt="task2"/>
+<img src="images/LOGBOOK13/1.2-root.png" width="400" alt="task2"/>
 
 If we look through Wireshark while executing the program, we notice two ICMP packets. The first one is the echo request we created. It is being delivered to Host B, which in turn, accepts the request. Thus, an echo reply packet is sent to the spoofed IP address, which belongs to Host A, even though he didn't send any request to Host B.
 
-<img src="images/LOGBOOK12/1.2-Wireshark.png" width="600" alt="task1-A"/>
+<img src="images/LOGBOOK13/1.2-Wireshark.png" width="600" alt="task1-A"/>
 
 In summary, we were able to impersonate Host A. It was a successful attack.
 
@@ -231,15 +231,15 @@ The types of reply packets we could get from the packet we sent are the followin
 
 With this in mind, we developed the code:
 
-<img src="images/LOGBOOK12/1.3-codigo-real-8.8.8.8.png" width="400" alt="task3"/>
+<img src="images/LOGBOOK13/1.3-codigo-real-8.8.8.8.png" width="400" alt="task3"/>
 
 After making sure we execute the code with root privilege, the result is:
 
-<img src="images/LOGBOOK12/1.3-codigo-8.8.8.8.png" width="250" alt="task3"/>
+<img src="images/LOGBOOK13/1.3-codigo-8.8.8.8.png" width="250" alt="task3"/>
 
 We can conclude the final destination, `8.8.8.8` is in a distance of 17. We can verify it by doing the normal traceroute function:
 
-<img src="images/LOGBOOK12/1.3-traceroute-8.8.8.8.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK13/1.3-traceroute-8.8.8.8.png" width="500" alt="task3"/>
 
 Which also returns the answer of 17, confirming our solution and code.
 
@@ -261,13 +261,13 @@ To forge the echo reply, we will need more knowledge. Digging more through the i
 
 Therefore, we reached the final code to be:
 
-<img src="images/LOGBOOK12/1.4-codigo.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-codigo.png" width="500" alt="task3"/>
 
 After putting the code with root privileges, we execute and see the results from three different scenarios:
 
-1.  `ping 1.2.3.4` - a non-existing host on the Internet
-2.  `ping 10.9.0.99` - a non-existing host on the LAN
-3.  `ping 8.8.8.8` - an existing host on the Internet
+1. `ping 1.2.3.4` - a non-existing host on the Internet
+2. `ping 10.9.0.99` - a non-existing host on the LAN
+3. `ping 8.8.8.8` - an existing host on the Internet
 
 > Note: We will ping from Host A.
 
@@ -275,31 +275,31 @@ After putting the code with root privileges, we execute and see the results from
 
 In Host A, we ping the IP address 1.2.3.4 :
 
-<img src="images/LOGBOOK12/1.4-A-1.2.3.4.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-A-1.2.3.4.png" width="500" alt="task3"/>
 
 From reading the image, 3 packets were transmitted. Besides, 3 packets were also received. Lets see if it was us:
 
-<img src="images/LOGBOOK12/1.4-root-1.2.3.4.png" width="300" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-root-1.2.3.4.png" width="300" alt="task3"/>
 
 It was us, but lets check through Wireshark how the packet flow looks:
 
-<img src="images/LOGBOOK12/1.4-Wireshark-1.2.3.4.png" width="600" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-Wireshark-1.2.3.4.png" width="600" alt="task3"/>
 
 After each request packet, a reply packet follows. Meaning the code we are executing captures the request packet, forges a reply packet, and host A receives it without problems. A successful transmission.
 
 But why it works? Well, we have to focus on the first ARP messages to fully understand.
 
 > The network uses `ARP protocol` to deliver packets between hosts. Each host not only has an IP address, but also has an `MAC address` - a fixed physical machine address.
-
-> To deliver a packet to an IP address, the `ARP protocol`, also known as `Address Resolution Protocol `, pairs each IP address to its MAC address in a table. Whenever there is a packet to deliver, if the IP is known, then they will deliver to the corresponding MAC.
-
+>
+> To deliver a packet to an IP address, the `ARP protocol`, also known as `Address Resolution Protocol`, pairs each IP address to its MAC address in a table. Whenever there is a packet to deliver, if the IP is known, then they will deliver to the corresponding MAC.
+>
 > However, if the destination IP is not known, by the `ARP protocol`, the machine will send a `broadcast packet` to discover the receiver's MAC address. In other words, it will send the packet to every host in the network, and whoever was the destination address will notify the machine to update the ARP table with the new IP and MAC address.
 
 If we look carefully in the logs, we see the first message was a broadcast packet. It is interested in knowing what MAC address has the host `10.9.0.1`. Wait, that address belongs to the `attacker machine`. **Why does it want to deliver the packet to the attacker machine before the final destination?**
 
 Well, for that we need to know the route that the packet from Host A is taking to reach 1.2.3.4. We can see the first route by executing the command:
 
-<img src="images/LOGBOOK12/1.4-route-1.2.3.4.png" width="400" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-route-1.2.3.4.png" width="400" alt="task3"/>
 
 It looks like the packet needs to be sent first to the attacker machine to reach 1.2.3.4. This is due to `1.2.3.4` not belonging to the same network. This means it is easy to the attacker machine to get the packet and sent a reply.
 
@@ -307,21 +307,21 @@ It looks like the packet needs to be sent first to the attacker machine to reach
 
 In Host A, we ping the IP address 10.9.0.99 :
 
-<img src="images/LOGBOOK12/1.4-A-10.9.0.99.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-A-10.9.0.99.png" width="500" alt="task3"/>
 
 From reading the image, 3 packets were transmitted. In the contrary, no packet was received by Host A. Wireshark confirms the same:
 
-<img src="images/LOGBOOK12/1.4-Wireshark-10.9.0.99.png" width="600" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-Wireshark-10.9.0.99.png" width="600" alt="task3"/>
 
-Wireshark showcases a broadcast to find the MAC address of 10.9.0.99. Since ` 10.9.0.99` belongs to the same LAN, then it doesn't need to be passed through the attacker machine, **failling** the transmission of echo reply. We can confirm the route of the packet:
+Wireshark showcases a broadcast to find the MAC address of 10.9.0.99. Since `10.9.0.99` belongs to the same LAN, then it doesn't need to be passed through the attacker machine, **failing** the transmission of echo reply. We can confirm the route of the packet:
 
-<img src="images/LOGBOOK12/1.4-route-10.9.0.99.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-route-10.9.0.99.png" width="500" alt="task3"/>
 
 #### Scenario 3 - `ping 8.8.8.8` - an existing host on the Internet
 
 In Host A, we ping the IP address 8.8.8.8 :
 
-<img src="images/LOGBOOK12/1.4-A-8.8.8.8.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-A-8.8.8.8.png" width="500" alt="task3"/>
 
 From reading the image, 3 packets were transmitted. In addition, 6 packets were received but 3 of them were duplicates of the other messages. Why there are duplicates? The reason is simple:
 
@@ -329,10 +329,10 @@ From reading the image, 3 packets were transmitted. In addition, 6 packets were 
 
 - The other 3 packet replies, were forged and sent by the `attacker machine` when it captured the request packet. Since the final destination address is outside LAN, then the request packet had to go through the attacker machine, hence being sniffed. It says they are duplicates because we are copying the exact data onto the forged replies (including the source of the reply), as it would be in an original reply.
 
-<img src="images/LOGBOOK12/1.4-Wireshark-8.8.8.8.png" width="600" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-Wireshark-8.8.8.8.png" width="600" alt="task3"/>
 
 We can check that the request packet has to go through the attacker machine:
 
-<img src="images/LOGBOOK12/1.4-route-8.8.8.8.png" width="500" alt="task3"/>
+<img src="images/LOGBOOK13/1.4-route-8.8.8.8.png" width="500" alt="task3"/>
 
 Yes, it was a successful transmission. But we weren't the only ones transmitting, which could raise some flags...
